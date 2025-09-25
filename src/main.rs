@@ -68,6 +68,7 @@ async fn main() -> Result<()> {
 
     let app_state = AppState { db : pool };
 
+    // ルーティングなどの設定
     let app = Router::new()
         .layer(CorsLayer::permissive())
         .layer(middleware::from_fn(logging_middleware))
