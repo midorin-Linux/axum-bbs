@@ -6,7 +6,6 @@ mod middleware;
 
 use crate::config::Config;
 use anyhow::{Context, Result};
-use askama::Template;
 use axum::{
     extract::{FromRef, FromRequestParts, State},
     http::{request::Parts, StatusCode},
@@ -16,15 +15,11 @@ use axum::{
     Router,
 };
 use axum_server::{Handle, tls_rustls::RustlsConfig};
-use hyper::Request;
 use serde::{Deserialize, Serialize};
 use std::net::{Ipv4Addr, SocketAddr};
 use std::time::Duration;
 use sqlx::SqlitePool;
-use tokio::{
-    net::TcpListener,
-    signal,
-};
+use tokio::signal;
 use tracing::{debug, info, warn, error, instrument};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use tower_http::{
@@ -39,6 +34,8 @@ struct AppState {
 
 #[tokio::main]
 async fn main() -> Result<()> {
+    println!("Starting server...");
+
     // RustlsのCryptoProviderを初期化
     rustls::crypto::aws_lc_rs::default_provider()
         .install_default()
@@ -64,9 +61,11 @@ async fn main() -> Result<()> {
     )
         .await
         .expect("TLS config error");
+    debug!("Loaded TLS config");
 
     // データベースの接続
     let pool = SqlitePool::connect(&config.database_url).await?;
+    debug!("Connected to database");
 
     let app_state = AppState { db : pool };
 
@@ -78,6 +77,10 @@ async fn main() -> Result<()> {
         .route(
             "/",
             get(response::root),
+        )
+        .route(
+            "/post",
+            get(handlers::posts::get_posts).post(handlers::posts::create_post)
         )
         .with_state(app_state);
 
@@ -112,7 +115,8 @@ async fn main() -> Result<()> {
         shutdown_handler.graceful_shutdown(Some(Duration::from_secs(1)));
     });
 
-    info!("Listening on https://{}", listener.to_string());
+    // info!("Listening on https://{}", listener.to_string());
+    info!("Listening on http://{}", listener.to_string());
 
     // サーバー起動(HTTPS)
     // axum_server::bind_rustls(listener, tls_config)
