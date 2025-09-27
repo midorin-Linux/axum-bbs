@@ -2,7 +2,7 @@ mod config;
 mod response;
 mod handlers;
 mod models;
-mod middlewares;
+mod middleware;
 
 use crate::config::Config;
 use anyhow::{Context, Result};
@@ -73,7 +73,7 @@ async fn main() -> Result<()> {
     // ルーティングなどの設定
     let app = Router::new()
         .layer(CorsLayer::permissive())
-        .layer(axum_middleware::from_fn(logging_middleware))
+        .layer(axum_middleware::from_fn(middleware::logging::logging_middleware))
         .nest_service("/static", ServeDir::new("./static"))
         .route(
             "/",
@@ -128,12 +128,3 @@ async fn main() -> Result<()> {
 
     Ok(())
 }
-
-async fn logging_middleware(req: Request<axum::body::Body>, next: axum_middleware::Next) -> Response {
-    debug!("Received request: {} {}", req.method(), req.uri());
-    let response = next.run(req).await;
-    debug!("Responded with: {}", response.status());
-    response
-}
-
-
