@@ -1,6 +1,8 @@
 mod config;
-mod database;
 mod response;
+mod handlers;
+mod models;
+mod middlewares;
 
 use crate::config::Config;
 use anyhow::{Context, Result};
@@ -8,7 +10,7 @@ use askama::Template;
 use axum::{
     extract::{FromRef, FromRequestParts, State},
     http::{request::Parts, StatusCode},
-    middleware::{self, Next},
+    middleware as axum_middleware,
     response::{Html, IntoResponse, Json, Response},
     routing::{get, post, put, delete},
     Router,
@@ -71,7 +73,7 @@ async fn main() -> Result<()> {
     // ルーティングなどの設定
     let app = Router::new()
         .layer(CorsLayer::permissive())
-        .layer(middleware::from_fn(logging_middleware))
+        .layer(axum_middleware::from_fn(logging_middleware))
         .nest_service("/static", ServeDir::new("./static"))
         .route(
             "/",
@@ -127,7 +129,7 @@ async fn main() -> Result<()> {
     Ok(())
 }
 
-async fn logging_middleware(req: Request<axum::body::Body>, next: Next) -> Response {
+async fn logging_middleware(req: Request<axum::body::Body>, next: axum_middleware::Next) -> Response {
     debug!("Received request: {} {}", req.method(), req.uri());
     let response = next.run(req).await;
     debug!("Responded with: {}", response.status());
