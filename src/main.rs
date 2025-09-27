@@ -112,8 +112,14 @@ async fn main() -> Result<()> {
 
     info!("Listening on https://{}", listener.to_string());
 
-    // サーバー起動
-    axum_server::bind_rustls(listener, tls_config)
+    // サーバー起動(HTTPS)
+    // axum_server::bind_rustls(listener, tls_config)
+    //     .handle(handle)
+    //     .serve(app.into_make_service())
+    //     .await?;
+
+    // サーバー起動(HTTP)
+    axum_server::bind(listener)
         .handle(handle)
         .serve(app.into_make_service())
         .await?;
