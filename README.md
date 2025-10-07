@@ -4,22 +4,37 @@
 ## 構造
 ```aiexclude
 axum-bbs/
-├── migrations/
-│   └── 20250921020554_init.sql     // migrationファイル
-├── src/
-│   ├── main.rs                     // エントリーポイント
-│   ├── config.rs                   // 設定を読み込む
-│   ├── database.rs                 // データベースの初期化
-│   └── response.rs                 // 静的コンテンツ配信処理
-├── static/                         // 静的コンテンツ置き場所
-│   └── images/
-│       ├── favicon.ico
-│       └── ferris.png
-├── templates/                      // htmlテンプレート置き場所
-│   └── index.html
-├── .env
-├── .gitignore                      // 設定ファイル
-├── Cargo.lock
-├── Cargo.toml
-└── README.md
+│  .env                         // 環境設定用
+│  .gitignore
+│  Cargo.lock
+│  Cargo.toml
+│  README.md
+│
+├─migrations
+│      20250921020554_init.sql  // SQLのマイグレーション
+│
+├─src
+│  │  config.rs                 // 設定の読み込み
+│  │  main.rs                   // エントリーポイント
+│  │  response.rs
+│  │
+│  ├─handlers
+│  │      mod.rs
+│  │      posts.rs              // ポスト処理
+│  │
+│  ├─middleware
+│  │      logging.rs            // 通信内容をロギングするミドルウェア
+│  │      mod.rs
+│  │
+│  └─models
+│          mod.rs
+│          post.rs              // ポストのデータ型
+│
+├─static
+│  └─images
+│          favicon.ico
+│          ferris.png
+│
+└─templates
+        index.html
 ```
